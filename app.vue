@@ -6,6 +6,7 @@
         <div class="content">
             <Subheader text="Input" />
             <input type="text" v-model="word" maxlength="15" placeholder="Enter the word to rhyme with" />
+            <Checkbox label="High quality" :checked="highQuality" @change="setHighQuality" />
             <button v-on:click="generate()" :disabled="loading == true">
                 <Spinner class="button-spinner" v-if="loading == true" />
                 <p v-else>Generate</p>
@@ -68,6 +69,27 @@ const output = ref('');
 const loading = ref(false);
 const notification = ref('');
 const notificationId = ref(0);
+const highQuality = ref(false);
+
+// change quality function
+function setHighQuality(checked: boolean) {
+    highQuality.value = checked;
+}
+
+// format time
+function formatTimeFromMilliseconds(milliseconds: number): string {
+    // Calculate hours, minutes, and seconds
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+    const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+
+    // Format minutes and seconds to be always two digits
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+
+    // Combine hours, formatted minutes, and formatted seconds into a time string
+    return `${hours}:${formattedMinutes}:${formattedSeconds}`;
+}
 
 // generate function
 async function generate() {
@@ -103,16 +125,30 @@ async function generate() {
     output.value = '';
 
     // create url
-    const url = new URL(`https://api.coolpixels.net/generateRhymingSentence/${strippedWord}`);
+    const url = new URL(
+        `https://api.coolpixels.net/generateRhymingSentence/${
+            (highQuality.value && 'highQuality/') || ''
+        }${strippedWord}`
+    );
 
     // generate sentence
     const response = await fetch(url);
-    const data: { success: boolean; data: string | undefined } = await response.json();
+    const data: { success: boolean; data?: string; error?: string; retryAfter?: number } = await response.json();
 
     if (data.success) {
         output.value = data.data || '';
     } else {
-        notification.value = 'An error occurred while generating the sentence';
+        if (response.status === 429) {
+            notification.value = `Please try again in ${formatTimeFromMilliseconds(
+                data.retryAfter || 0
+            )} or try a different quality setting.`;
+        } else if (response.status === 400) {
+            notification.value = data.error || 'An error occurred while generating the sentence.';
+        } else if (response.status === 500) {
+            notification.value = 'A server error occurred while generating the sentence.';
+        } else {
+            notification.value = data.error || 'An unknown error occurred while generating the sentence.';
+        }
     }
 
     // mark as not loading

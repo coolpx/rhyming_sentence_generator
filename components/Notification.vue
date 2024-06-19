@@ -60,6 +60,9 @@ watch(
 
 p {
     font-size: 150%;
+    width: 100% !important;
+    max-width: unset;
+    text-align: center;
 }
 
 img {
