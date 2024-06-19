@@ -102,8 +102,11 @@ async function generate() {
     // clear output
     output.value = '';
 
+    // create url
+    const url = new URL(`https://api.coolpixels.net/generateRhymingSentence/${strippedWord}`);
+
     // generate sentence
-    const response = await fetch(`https://api.coolpixels.net/generateRhymingSentence/${strippedWord}`);
+    const response = await fetch(url);
     const data: { success: boolean; data: string | undefined } = await response.json();
 
     if (data.success) {
