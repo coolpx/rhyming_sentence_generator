@@ -4,13 +4,17 @@
         <div class="content">
             <Subheader text="Input" />
             <input type="text" v-model="word" maxlength="15" placeholder="Enter the word to rhyme with" />
-            <button v-on:click="generate()">Generate</button>
+            <button v-on:click="generate()" :disabled="loading == true">
+                <Spinner class="button-spinner" v-if="loading == true" />
+                <p v-else>Generate</p>
+            </button>
 
             <Divider />
 
             <Subheader text="Output" />
-            <div class="output">
-                <p ref="output"></p>
+            <div v-show="output != '' || loading == true" class="output">
+                <Spinner v-if="loading == true" />
+                <p>{{ output }}</p>
             </div>
         </div>
     </div>
@@ -58,23 +62,29 @@ useHead({
 
 // create refs
 const word = ref('');
-const output = ref<HTMLParagraphElement | null>(null);
+const output = ref('');
+const loading = ref(false);
 
 // generate function
 async function generate() {
-    // get output element
-    const outputElement = output.value;
-    if (!outputElement) return;
+    // clear output
+    output.value = '';
+
+    // mark as loading
+    loading.value = true;
 
     // generate sentence
     const response = await fetch(`https://api.coolpixels.net/generateRhymingSentence/${word.value}`);
     const data: { success: boolean; data: string | undefined } = await response.json();
 
     if (data.success) {
-        outputElement.innerText = data.data || '';
+        output.value = data.data || '';
     } else {
-        outputElement.innerText = 'An error occurred while generating the sentence';
+        output.value = 'An error occurred while generating the sentence';
     }
+
+    // mark as not loading
+    loading.value = false;
 }
 </script>
 
@@ -126,6 +136,11 @@ button {
     background: linear-gradient(to bottom, #00bcd1, #0073d2);
 }
 
+button[disabled] {
+    cursor: not-allowed;
+    background: linear-gradient(to bottom, #6f747f, #474a54);
+}
+
 .content {
     width: 50%;
     margin: 0 auto;
@@ -140,5 +155,9 @@ button {
     width: 100%;
     min-width: 320px;
     max-width: 512px;
+}
+
+.button-spinner {
+    height: 100% !important;
 }
 </style>
