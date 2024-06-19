@@ -1,5 +1,7 @@
 <template>
     <div class="main">
+        <Notification v-if="notification != ''" :content="notification" :id="notificationId" includeSpacer />
+
         <Header title="Rhyming Sentence Generator" />
         <div class="content">
             <Subheader text="Input" />
@@ -64,23 +66,50 @@ useHead({
 const word = ref('');
 const output = ref('');
 const loading = ref(false);
+const notification = ref('');
+const notificationId = ref(0);
 
 // generate function
 async function generate() {
-    // clear output
-    output.value = '';
+    // increment notification id
+    notificationId.value++;
+
+    // clear notification
+    notification.value = '';
 
     // mark as loading
     loading.value = true;
 
+    // validate word
+    if (word.value.match(/[^a-zA-Z\s]/)) {
+        notification.value = 'Word can only contain alphabetical characters';
+        loading.value = false;
+        return;
+    }
+
+    const strippedWord = word.value.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
+
+    if (strippedWord.length < 2) {
+        notification.value = 'Word cannot have less than 2 characters';
+        loading.value = false;
+        return;
+    } else if (strippedWord.length > 15) {
+        notification.value = 'Word cannot have more than 15 characters';
+        loading.value = false;
+        return;
+    }
+
+    // clear output
+    output.value = '';
+
     // generate sentence
-    const response = await fetch(`https://api.coolpixels.net/generateRhymingSentence/${word.value}`);
+    const response = await fetch(`https://api.coolpixels.net/generateRhymingSentence/${strippedWord}`);
     const data: { success: boolean; data: string | undefined } = await response.json();
 
     if (data.success) {
         output.value = data.data || '';
     } else {
-        output.value = 'An error occurred while generating the sentence';
+        notification.value = 'An error occurred while generating the sentence';
     }
 
     // mark as not loading
@@ -117,7 +146,7 @@ button,
     border-style: solid;
     border-width: 4px;
     border-radius: 24px;
-    padding: 12px;
+    padding: 6px 12px;
     border-color: #414141;
 }
 
