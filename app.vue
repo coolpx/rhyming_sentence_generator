@@ -34,6 +34,24 @@ useHead({
         {
             name: 'viewport',
             content: 'width=device-width, initial-scale=1.0'
+        },
+
+        {
+            name: 'og:title',
+            content: 'Rhyming Sentence Generator'
+        },
+        {
+            name: 'og:description',
+            content:
+                'On the declining alpine incline, nine divine felines dined on fine wine and spiced pine, intertwining their feline minds to align with the starry sign, entwined in the confines of the moonlit shrine, as the night became benign and they reclined, basking in twilight’s crystalline shine.'
+        },
+        {
+            name: 'og:image',
+            content: 'https://rhymes.coolpixels.net/icon.webp'
+        },
+        {
+            name: 'og:url',
+            content: 'https://rhymes.coolpixels.net/'
         }
     ]
 });
@@ -65,7 +83,7 @@ async function generate() {
     font-family: InterVariable, sans-serif;
     font-feature-settings: 'liga' 1, 'calt' 1;
 
-    background-color: #1d1d1d;
+    background-color: #141414;
     color: #ffffff;
 }
 

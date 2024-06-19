@@ -24,7 +24,7 @@ div {
 h1 {
     font-size: 400%;
     text-align: center;
-    background: linear-gradient(to bottom, #ffffff, #49465b);
+    background: linear-gradient(to bottom, #ffffff, #686480);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
